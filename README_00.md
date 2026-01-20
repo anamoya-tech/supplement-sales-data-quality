@@ -1,193 +1,90 @@
 # Data Quality & Revenue Audit — Supplement Sales (Google Sheets)
 
-## Project Overview
-This project focuses on **data quality assessment, data cleaning, and business validation** using a real-world e-commerce sales dataset related to nutritional supplements.
+## Overview
+This project focuses on **data quality assessment and revenue validation** using a real-world e-commerce sales dataset related to nutritional supplements.
 
-The objective is not only to clean the data, but to **prove data readiness for BI** and to **validate key business metrics**, identifying patterns that are not immediately visible in the raw data.
+The goal is to ensure the data is **BI-ready** and to validate whether reported revenue follows the expected business logic.
 
-The entire workflow is implemented in **Google Sheets**, following a reproducible, pipeline-style approach similar to SQL transformations.
+All work is implemented in **Google Sheets**, using a reproducible pipeline approach (raw → clean → aggregate → dashboard).
 
 ---
 
-## Project Objectives (SMART)
-
-### 1. Data Quality Assessment
-- Profile the raw dataset to detect:
-  - Missing values
-  - Numeric fields stored as text
-  - Non-reporting-ready date formats
-  - Duplicate records
-- Quantify data quality using clear **BEFORE vs AFTER KPIs**.
-
-### 2. Data Cleaning and Standardization
-- Convert all numeric fields to proper numeric types.
-- Normalize date formats and derive reporting periods.
-- Standardize categorical fields (location, platform, category).
-- Preserve the raw dataset without any modifications.
-
-### 3. Business Validation
-- Verify whether reported revenue follows the expected formula:
-Units Sold × Price × (1 − Discount)
-- Analyze discrepancies to determine whether they represent **data quality issues or business logic**.
+## Objectives
+- Assess data quality (formats, dates, duplicates)
+- Clean and standardize the dataset without modifying raw data
+- Validate reported revenue against an expected calculation
+- Identify and explain meaningful business patterns
 
 ---
 
 ## Dataset
 - **Source:** Kaggle — Supplement Sales Dataset  
 - **Rows:** 4,385  
-- **Columns:** 10  
 - **Granularity:** Weekly sales transactions  
 
-**Main fields**
-- Date  
-- Product Name  
-- Category  
-- Units Sold  
-- Price  
-- Revenue  
-- Discount  
-- Units Returned  
-- Location  
-- Platform  
+Key fields include Date, Product, Units Sold, Price, Revenue, Discount, Location, and Platform.
 
 ---
 
-## Data Profiling (BEFORE — Raw Data)
+## Data Quality (BEFORE → AFTER)
+- Missing values: **0%**
+- Numeric fields stored as text (raw):
+  - Price: 91.4%
+  - Revenue: 70.4%
+- Duplicates: **0** (Date + Product + Location + Platform)
 
-### Key Findings
-- **Missing values:** 0% across all columns.
-- **Numeric fields stored as text (locale-related):**
-- Price: 91.4%
-- Revenue: 70.4%
-- **Dates:** Stored in ISO format (`YYYY-MM-DD`), not directly usable for reporting under ES locale.
-- **Duplicates:** 0 detected using the composite key:
-Date + Product Name + Location + Platform
-
-### Cardinality (Unique Values)
-- Location: 3  
-- Platform: 3  
-- Category: 10  
-- Product Name: 16  
+After cleaning:
+- Numeric fields valid: **100%**
+- Dates normalized: **100%**
+- Dataset ready for reporting
 
 ---
 
-## Cleaning Rules Applied
+## Revenue Validation
+Reported revenue was audited using the expected formula:
+Units Sold × Price × (1 − Discount)
 
-All transformations are applied **without modifying the raw data**.
-
-### Numeric Type Enforcement
-New fields created:
-- `units_sold_clean`
-- `price_clean`
-- `revenue_clean`
-- `discount_clean`
-- `units_returned_clean`
-
-Invalid conversions are explicitly flagged as `CHECK_NUM`.
+New metrics were created:
+- Recalculated revenue
+- Revenue difference
+- Revenue uplift = (reported / expected) − 1
 
 ---
 
-### Revenue Audit (Critical Validation Step)
-The original `Revenue` field is not assumed to be correct by default.
+## Key Insight
+Reported revenue is **systematically higher** than expected after discounts.
 
-New metrics created:
-- `revenue_recalc`
-- `revenue_diff`
-- `ratio = revenue_clean / revenue_recalc`
-- `revenue_uplift = ratio − 1`
+- **Average uplift:** ~15%
+- **Median uplift:** ~14%
+- Pattern is stable over time, platforms, and countries
 
-This enables full validation of reported revenue against a transparent expected model.
+This suggests **undocumented business rules** (fees, taxes, or platform margins) rather than data quality errors.
 
 ---
 
-### Date Normalization
-- `date_clean`: true date type
-- `month_clean`: reporting period in `YYYY-MM` format
-
----
-
-### Categorical Standardization
-- `location_clean`: trimmed and uppercased
-- `platform_clean`: trimmed and uppercased
-- `category_clean`: standardized naming conventions
-
----
-
-### Quality Flags
-- `dup_flag`: duplicate detection
-- `data_error_flag`: technical data quality issues
-- `business_alert_flag`: business-rule inconsistencies
-- `issue_flag`: combined quality indicator
-
----
-
-## Dashboard Summary (AFTER — Clean Data)
-
-### Data Quality KPIs
-- **Total rows:** 4,385  
-- **Data errors:** 0  
-- **Duplicates:** 0  
-- **Numeric fields valid:** 100%  
-- **Valid dates:** 100%  
-
-### Revenue Validation KPIs
-- **Average revenue uplift:** 14.99%  
-- **Median revenue uplift:** 13.64%  
-
----
-
-## Key Business Insight
-
-Reported revenue is **systematically higher** than the revenue expected after discounts.
-
-- Revenue uplift typically ranges between **3% and 33%**.
-- The uplift is:
-- Consistent over time
-- Consistent across platforms
-- This strongly suggests the presence of **fees, taxes, or platform margins**, rather than data quality errors.
-
-The conclusion is supported by:
-- Monthly comparison of reported vs recalculated revenue
-- Monthly average uplift trends
-- Platform-level uplift comparison
-
----
-
-## Project Structure
-
-- **RAW_Supplement_Sales_Weekly_Expanded**  
-Original dataset, preserved intact.
-
-- **clean_data**  
-Fully cleaned, BI-ready dataset with validation metrics and flags.
-
-- **cleaning_log**  
-Detailed log documenting every transformation, rule applied, and its impact.
-
-- **data_quality_dashboard**  
-Final dashboard including:
-- BEFORE vs AFTER quality KPIs
-- Revenue audit visualizations
-- Time-based and platform-based insights
+## Dashboard
+The final dashboard includes:
+- Data quality KPIs (BEFORE vs AFTER)
+- Reported vs recalculated revenue (monthly)
+- Average revenue uplift by platform
+- Revenue uplift trends over time
+- Country × platform uplift heatmap
 
 ---
 
 ## Skills Demonstrated
-- Data profiling and quality assessment
-- Locale-aware data cleaning
-- Reproducible transformation pipelines
+- Data profiling and cleaning
 - Revenue and metric validation
-- Analytical storytelling through dashboards
+- Reproducible analysis in Google Sheets
+- Analytical interpretation and communication
 
 ---
 
-## Next Step (Planned)
-- **Revenue uplift by Country × Platform**
-- Pivot table and heatmap analysis
-- Identification of regional pricing or fee differences
+## Next Step
+Validate the observed revenue uplift with Finance or Operations teams to document the official revenue calculation logic.
 
 ---
 
 ## Status
-Project complete up to the **data quality and revenue audit phase**.  
-Ready for portfolio presentation and interview discussion.
+Project completed and ready for portfolio and interview presentation.
+
